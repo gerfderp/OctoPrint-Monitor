@@ -1,0 +1,15 @@
+<!-- ko allowBindings: true -->
+<div class="jog-panel" id="monitorControl" style="display: none;">
+    <h1>Monitor</h1>
+    <div>
+        Lights<br/>
+        State: <span id="light_state">{{ plugin_monitor_light_state }}</span><br/>
+        Level:<span id="lux">{{ plugin_monitor_lux }}</span><br/>
+        <button class="btn btn-block control-box" data-bind="click: sendLightToggleCommand">{{ _('Toggle') }}</button>
+
+        Temps<br/>
+        Inside:<span id="temp_inside">{{ plugin_monitor_temp_inside }}</span><br/>
+        Ambient:<span id="temp_outside">{{ plugin_monitor_temp_outside }}</span><br/>
+    </div>
+</div>
+<!-- /ko -->

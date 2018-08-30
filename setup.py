@@ -33,7 +33,7 @@ plugin_url = "https://github.com/gerfderp/OctoPrint-Monitor"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = []
+plugin_requires =  open("requirements.txt").read().split("\n")
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point

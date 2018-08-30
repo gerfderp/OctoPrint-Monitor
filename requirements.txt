@@ -7,3 +7,5 @@
 ###
 
 .
+OctoPrint
+RPi.GPIO>=0.6.3
