@@ -13,6 +13,9 @@ $(function() {
         // self.settingsViewModel = parameters[1];
         self.light_state = ko.observable();
         self.lux = ko.observable();
+        self.temp_internal = ko.observable();
+        self.temp_external = ko.observable();
+        self.humidity = ko.observable();
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "monitor") {
@@ -28,6 +31,21 @@ $(function() {
 				console.log('lux is now: ' + data.lux);
 				self.lux = data.lux;
 				$("#lux").text(self.lux);
+			}
+			if(data.hasOwnProperty("temp_internal")) {
+				console.log('temp_internal is now: ' + data.temp_internal);
+				self.temp_internal = data.temp_internal;
+				$("#temp_internal").text(self.temp_internal);
+			}
+			if(data.hasOwnProperty("temp_external")) {
+				console.log('temp_external is now: ' + data.temp_external);
+				self.temp_external = data.temp_external;
+				$("#temp_external").text(self.temp_external);
+			}
+			if(data.hasOwnProperty("humidity")) {
+				console.log('humidity is now: ' + data.humidity);
+				self.humidity = data.humidity;
+				$("#humidity").text(self.humidity);
 			}
         }
         self.onAfterBinding = function() {

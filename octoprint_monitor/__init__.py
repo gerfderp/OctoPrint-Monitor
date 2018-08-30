@@ -29,6 +29,9 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 
 	light_state = "off"
 	lux = 0
+	temp_internal = 0
+	temp_external = 0
+	humidity = 0
 	# strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL,
 	# 						  LED_STRIP)
 
@@ -93,7 +96,16 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 	def update_data(self):
 		from octoprint_monitor.lux import get_lux
 		self.lux = get_lux(self._settings.settings.effective['plugins']['monitor']['light_pin'])
-		data = dict(lux=self.lux, light_state=self.light_state)
+		from octoprint_monitor.env import get_temp, get_humidity
+		self.temp_internal = get_temp('internal')
+		self.temp_external = get_temp('external')
+		self.humidity = get_humidity()
+		data = dict(lux=self.lux,
+					light_state=self.light_state,
+					temp_internal=self.temp_internal,
+					temp_external=self.temp_external,
+					humidity=self.humidity
+					)
 		self._plugin_manager.send_plugin_message(self._identifier, data)
 
 	##~~ TemplatePlugin mixin
