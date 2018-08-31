@@ -5,38 +5,41 @@
 # various animations on a strip of NeoPixels.
 
 
+class NeopixelWrapper():
+	# LED strip configuration:
+	# LED_COUNT      = self._settings.settings.effective['plugins']['monitor']['neopixel_count']      # Number of LED pixels.
+	# LED_PIN        = self._settings.settings.effective['plugins']['monitor']['neopixel_pin']      # GPIO pin connected to the pixels (must support PWM!).
+	LED_COUNT = 0
+	LED_PIN = 0
+	LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
+	LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
+	LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
+	LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
+	LED_CHANNEL    = 0
+	#LED_STRIP      = ws.SK6812_STRIP_RGBW
+	LED_STRIP      = ws.SK6812W_STRIP
+	strip = ''
 
+	def __init__(self, count, pin):
+		self.LED_COUNT = count
+		self.LED_PIN = pin
+		try:
+			from neopixel import *
+			strip = Adafruit_NeoPixel(self.LED_COUNT, self.LED_PIN, self.LED_FREQ_HZ, self.LED_DMA, self.LED_INVERT,
+									  self.LED_BRIGHTNESS, self.LED_CHANNEL, self.LED_STRIP)
+			strip.begin()
 
-# from neopixel import *
-#
-# # LED strip configuration:
-# LED_COUNT      = self._settings.settings.effective['plugins']['monitor']['neopixel_count']      # Number of LED pixels.
-# LED_PIN        = self._settings.settings.effective['plugins']['monitor']['neopixel_pin']      # GPIO pin connected to the pixels (must support PWM!).
-# LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-# LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-# LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-# LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-# LED_CHANNEL    = 0
-# #LED_STRIP      = ws.SK6812_STRIP_RGBW
-# LED_STRIP      = ws.SK6812W_STRIP
-#
-#
-# strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL,
-# 							  LED_STRIP)
-# strip.begin()
-def lights_on(strip):
-	colorWipe(strip, Color(0, 0, 0, 255))
+		except ImportError:
+			raise ImportError('Neopixel libraries not installed.')
 
-def lights_off(strip):
-	colorWipe(strip, Color(0, 0, 0, 0))
+	def lights_on(self):
+		self.colorWipe(Color(0, 0, 0, 255))
 
-def colorWipe(strip, color):
-	"""Wipe color across display a pixel at a time."""
-	# strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL,
-	# 						  LED_STRIP)
-	# Intialize the library (must be called once before other functions).
-	# strip.begin()
-	color = Color(0, 0, 0, 255)
-	for i in range(strip.numPixels()):
-		strip.setPixelColor(i, color)
-		strip.show()
+	def lights_off(self):
+		colorWipe(Color(0, 0, 0, 0))
+
+	def colorWipe(color):
+		color = Color(0, 0, 0, 255)
+		for i in range(self.strip.numPixels()):
+			self.strip.setPixelColor(i, color)
+			self.strip.show()
