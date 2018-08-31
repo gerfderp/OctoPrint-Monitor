@@ -59,7 +59,7 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 	def on_api_command(self, command, data):
 		import flask
 		if command == "lights":
-			from octoprint_monitor.neopixel import NeopixelWrapper
+			from octoprint_monitor.lights import NeopixelWrapper
 			np = NeopixelWrapper(self._settings.settings.effective['plugins']['monitor']['neopixel_count'],
 									 self._settings.settings.effective['plugins']['monitor']['neopixel_pin'] )
 			if (self.light_state == "off"):
