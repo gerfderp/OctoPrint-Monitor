@@ -9,3 +9,4 @@
 .
 OctoPrint
 RPi.GPIO>=0.6.3
+neopixel
