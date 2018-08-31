@@ -8,4 +8,4 @@
 
 OctoPrint
 RPi.GPIO>=0.6.3
-neopixel
+-e git://github.com:jgarff/rpi_ws281x.git
