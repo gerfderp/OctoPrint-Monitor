@@ -3,21 +3,6 @@ from __future__ import absolute_import
 from octoprint.events import eventManager, Events
 import octoprint.plugin
 
-# from neopixel import *
-
-# # LED strip configuration:
-# LED_COUNT      = self._settings.settings.effective['plugins']['monitor']['neopixel_count']      # Number of LED pixels.
-# LED_PIN        = self._settings.settings.effective['plugins']['monitor']['neopixel_pin']      # GPIO pin connected to the pixels (must support PWM!).
-# LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-# LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-# LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-# LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-# LED_CHANNEL    = 0
-# #LED_STRIP      = ws.SK6812_STRIP_RGBW
-# LED_STRIP      = ws.SK6812W_STRIP
-
-
-
 
 class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 					octoprint.plugin.AssetPlugin,
@@ -28,55 +13,53 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 					octoprint.plugin.ShutdownPlugin):
 
 	light_state = "off"
-	lux = 0
 	temp_internal = 0
 	temp_external = 0
 	humidity = 0
-	# strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL,
-	# 						  LED_STRIP)
+	np = ''
+	env = ''
+	dht_pin = ''
 
 	##~~ StartupPlugin mixin
 
 	def on_after_startup(self):
 		self._logger.info("Hello World from da Monitor Lizard!")
+		from octoprint_monitor.lights import NeopixelWrapper
+		LED_PIN = int(self._settings.get(["neopixel_pin"]))
+		self._logger.info(
+			"setting up pixels with PIN of {LED_PIN}.".format(**locals()))
+		self.np = NeopixelWrapper(LED_PIN)
+
+		from octoprint_monitor.env import Env
+		self.env = Env()
+
 		self.update_data()
-		# strip.begin()
+
 
 	##~~ ShutdownPlugin mixin
-	# def on_shutdown(self):
-		# from octoprint_monitor.lux import cleanup
-		# cleanup()
+	def on_shutdown(self):
+		self.np.cleanup()
 
 	##~~ SimpleAPIPlugin mixin
 
 	def get_api_commands(self):
 		return dict(
 			lights=[],
-			lux=[],
 			update=[]
 		)
 
 	def on_api_command(self, command, data):
 		import flask
 		if command == "lights":
-			from octoprint_monitor.lights import NeopixelWrapper
-			np = NeopixelWrapper(self._settings.settings.effective['plugins']['monitor']['neopixel_count'],
-									 self._settings.settings.effective['plugins']['monitor']['neopixel_pin'] )
 			if (self.light_state == "off"):
 				self.light_state = "on"
-				np.lights_on()
+				self.np.lights_on()
 			else:
 				self.light_state = "off"
-				np.lights_off()
+				self.np.lights_off()
 			self._logger.info("lights command called, lights are now {self.light_state}".format(**locals()))
 			self.update_data()
 			return flask.jsonify(light_state=self.light_state)
-		elif command == "lux":
-			from octoprint_monitor.lux import get_lux
-			self.lux = get_lux(self._settings.settings.effective['plugins']['monitor']['light_pin'])
-			self._logger.info("command2 called, lux is {self.lux}".format(**locals()))
-			self.update_data()
-			return flask.jsonify(lux=self.lux)
 		elif command == "update":
 			self.update_data()
 
@@ -86,13 +69,17 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 
 	##~~ SettingsPlugin mixin
 
+	# TODO: implement config versions
+
 	def get_settings_defaults(self):
 		return dict(
-			neopixel_count="16",
-			neopixel_pin="18",
-			light_pin="7"
-
+			neopixel_pin="",
+			light_pin="",
+			dht_pin=""
 		)
+
+	def on_settings_save(self, data):
+		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
 	# ~~ EventHandlerPlugin mixin
 	def on_event(self, event, payload):
@@ -100,31 +87,32 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 			self.update_data()
 
 	def update_data(self):
-		from octoprint_monitor.lux import get_lux
-		self.lux = get_lux(self._settings.settings.effective['plugins']['monitor']['light_pin'])
-		from octoprint_monitor.env import get_temp, get_humidity
-		self.temp_internal = get_temp('internal')
-		self.temp_external = get_temp('external')
-		self.humidity = get_humidity()
-		data = dict(lux=self.lux,
-					light_state=self.light_state,
+
+		self.env.update(self._settings.get(["dht_pin"]));
+		self.temp_internal = self.env.get_temp('internal')
+
+		self.temp_external = self.env.get_temp('external')
+		x = type(self.temp_external)
+		self._logger.info("x type: {x}".format(**locals()))
+		y = "{0:.2f}".format(self.temp_external)
+		ytype = type(y)
+		self._logger.info("y val: {y}".format(**locals()))
+		self._logger.info("y type: {ytype}".format(**locals()))
+
+
+		self.humidity = self.env.get_humidity()
+		data = dict(light_state=self.light_state,
 					temp_internal=self.temp_internal,
-					temp_external=self.temp_external,
-					humidity=self.humidity
+					temp_external="{0:.1f}".format(self.temp_external),
+					humidity="{0:.1f}".format(self.humidity)
 					)
 		self._plugin_manager.send_plugin_message(self._identifier, data)
 
 	##~~ TemplatePlugin mixin
 
-	def get_template_vars(self):
-		return dict(neopixel_count=self._settings.get(["neopixel_count"]),
-					light_state=self.light_state,
-					lux=self.lux)
-
-
 	def get_template_configs(self):
 		return [
-			dict(type="settings", custom_bindings=True),
+			dict(type="settings", custom_bindings=False),
 			dict(type="generic", template="monitor.jinja2", custom_bindings=True)
 		]
 
