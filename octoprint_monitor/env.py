@@ -1,8 +1,3 @@
-import RPi.GPIO as GPIO
-# import fake_rpi.RPi as GPIO
-# import time
-import sys
-# import fake_rpi.Adafruit_DHT
 import Adafruit_DHT
 from w1thermsensor import W1ThermSensor
 

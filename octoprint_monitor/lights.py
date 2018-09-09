@@ -1,9 +1,7 @@
-
 import RPi.GPIO as GPIO
 
-
 class NeopixelWrapper():
-	# LED strip configuration:
+	# trinket connection configuration:
 	LED_PIN = 10
 
 	def __init__(self, pin):
