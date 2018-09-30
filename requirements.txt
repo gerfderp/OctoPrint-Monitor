@@ -8,3 +8,5 @@
 
 OctoPrint
 RPi.GPIO>=0.6.3
+Adafruit_DHT
+W1ThermSensor

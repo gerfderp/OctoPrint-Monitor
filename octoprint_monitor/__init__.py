@@ -87,18 +87,10 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 			self.update_data()
 
 	def update_data(self):
-
 		self.env.update(self._settings.get(["dht_pin"]));
 		self.temp_internal = self.env.get_temp('internal')
 
 		self.temp_external = self.env.get_temp('external')
-		x = type(self.temp_external)
-		self._logger.info("x type: {x}".format(**locals()))
-		y = "{0:.2f}".format(self.temp_external)
-		ytype = type(y)
-		self._logger.info("y val: {y}".format(**locals()))
-		self._logger.info("y type: {ytype}".format(**locals()))
-
 
 		self.humidity = self.env.get_humidity()
 		data = dict(light_state=self.light_state,

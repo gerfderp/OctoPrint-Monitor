@@ -14,4 +14,9 @@ the plugin manager.
 
 ## Configuration
 
+Using raspi-config, enable the following Interfacing Options:
+
+* 1-Wire
+* SPI
+
 **TODO:** Describe your plugin's configuration options (if any).
