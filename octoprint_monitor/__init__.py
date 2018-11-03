@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from octoprint.events import eventManager, Events
 import octoprint.plugin
+from octoprint_monitor.env import Env
 
 
 class MonitorPlugin(octoprint.plugin.SettingsPlugin,
@@ -11,14 +12,14 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 					octoprint.plugin.StartupPlugin,
 					octoprint.plugin.SimpleApiPlugin,
 					octoprint.plugin.ShutdownPlugin):
-
-	light_state = "off"
-	temp_internal = 0
-	temp_external = 0
-	humidity = 0
-	np = ''
-	env = ''
-	dht_pin = ''
+	def __init__(self):
+		self.light_state = "off"
+		self.temp_internal = 0
+		self.temp_external = 0
+		self.humidity = 0
+		self.np = None
+		self.env = None
+		self.dht_pin = None
 
 	##~~ StartupPlugin mixin
 
@@ -28,10 +29,9 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 		LED_PIN = int(self._settings.get(["neopixel_pin"]))
 		self._logger.info(
 			"setting up pixels with PIN of {LED_PIN}.".format(**locals()))
-		self.np = NeopixelWrapper(LED_PIN)
-
-		from octoprint_monitor.env import Env
-		self.env = Env()
+		# self.np = NeopixelWrapper(LED_PIN)
+		self.dht_pin = int(self._settings.get(["dht_pin"]))
+		self.env = Env(self.dht_pin)
 
 		self.update_data()
 
@@ -82,12 +82,12 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
 	# ~~ EventHandlerPlugin mixin
-	def on_event(self, event, payload):
-		if event == Events.CONNECTED:
-			self.update_data()
+	# def on_event(self, event, payload):
+		# if event == Events.CONNECTED:
+			# self.update_data()
 
 	def update_data(self):
-		self.env.update(self._settings.get(["dht_pin"]));
+		self.env.update();
 		self.temp_internal = self.env.get_temp('internal')
 
 		self.temp_external = self.env.get_temp('external')
@@ -99,6 +99,7 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 					humidity="{0:.1f}".format(self.humidity)
 					)
 		self._plugin_manager.send_plugin_message(self._identifier, data)
+		return data
 
 	##~~ TemplatePlugin mixin
 
@@ -151,6 +152,8 @@ __plugin_name__ = "Monitor Plugin"
 
 
 def __plugin_load__():
+	plugin = MonitorPlugin()
+
 	global __plugin_implementation__
 	__plugin_implementation__ = MonitorPlugin()
 
@@ -158,3 +161,8 @@ def __plugin_load__():
 	__plugin_hooks__ = {
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
+
+	global __plugin_helpers__
+	__plugin_helpers__ = dict(
+		update_data=plugin.update_data
+	)

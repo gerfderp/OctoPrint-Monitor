@@ -1,4 +1,8 @@
-import RPi.GPIO as GPIO
+try:
+	import RPi.GPIO as GPIO
+except ImportError:
+	import fake_rpi.RPi as GPIO
+
 
 class NeopixelWrapper():
 	# trinket connection configuration:
