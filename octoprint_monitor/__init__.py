@@ -97,8 +97,8 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 		self.humidity = self.env.get_humidity()
 		data = dict(light_state=self.light_state,
 					temp_internal=self.temp_internal,
-					temp_external="{0:.1f}".format(self.temp_external),
-					humidity="{0:.1f}".format(self.humidity)
+					temp_external=self.temp_external,
+					humidity=self.humidity
 					)
 		self._plugin_manager.send_plugin_message(self._identifier, data)
 		return data
