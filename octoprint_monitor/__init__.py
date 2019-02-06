@@ -29,7 +29,7 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 		LED_PIN = int(self._settings.get(["neopixel_pin"]))
 		self._logger.info(
 			"setting up pixels with PIN of {LED_PIN}.".format(**locals()))
-		# self.np = NeopixelWrapper(LED_PIN)
+		self.np = NeopixelWrapper(LED_PIN)
 		self.dht_pin = int(self._settings.get(["dht_pin"]))
 		self.env = Env(self.dht_pin)
 
@@ -62,12 +62,12 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 			return flask.jsonify(light_state=self.light_state)
 		elif command == "update":
 			self.update_data()
-			return flask.jsonify({'temperature': self.temp_external, 'humidity': self.humidity})
+			return flask.jsonify({'temperature': "{0:.1f}".format(self.temp_external), 'humidity': "{0:.1f}".format(self.humidity)})
 
 	def on_api_get(self, request):
 		import flask
 		self.update_data()
-		return flask.jsonify({'temperature': self.temp_external, 'humidity': self.humidity})
+		return flask.jsonify({'temperature': "{0:.1f}".format(self.temp_external), 'humidity': "{0:.1f}".format(self.humidity)})
 
 	##~~ SettingsPlugin mixin
 
