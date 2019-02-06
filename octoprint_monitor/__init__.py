@@ -62,10 +62,12 @@ class MonitorPlugin(octoprint.plugin.SettingsPlugin,
 			return flask.jsonify(light_state=self.light_state)
 		elif command == "update":
 			self.update_data()
+			return flask.jsonify({'temperature': self.temp_external, 'humidity': self.humidity})
 
 	def on_api_get(self, request):
 		import flask
-		return flask.jsonify(foo="bar")
+		self.update_data()
+		return flask.jsonify({'temperature': self.temp_external, 'humidity': self.humidity})
 
 	##~~ SettingsPlugin mixin
 
